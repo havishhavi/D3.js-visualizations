@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Radial Network Diagram Example</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <h2> Radial Network diagram</h2>
+    <svg width="500" height="500"></svg>
+
+    <script>
+         
+        // data as an adjacency matrix
+        const data = [
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+        ];
+        // Dimensions of the diagram
+        const width = 500;
+        const height = 500;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = Math.min(centerX, centerY) - 50;
+
+        // SVG element
+        const svg = d3.select("svg");
+
+        // the links according to given matrix data
+        const links = [];
+        for (let i = 0; i < data.length; i++) {
+            for (let j = i + 1; j < data[i].length; j++) {
+                if (data[i][j] === 1) {
+                    links.push({ source: i, target: j });
+                }
+            }
+        }
+
+        // create nodes accouding to given matrix data
+        const nodes = d3.range(data.length).map((i) => {
+            const angle = (i / data.length) * 2 * Math.PI - Math.PI / 2;
+            return {
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+                id: i+1,
+            };
+        });
+
+        //  link and node groups
+        const linkGroup = svg.append("g").attr("class", "links");
+        const nodeGroup = svg.append("g").attr("class", "nodes");
+
+        //  the links between nodes
+        linkGroup
+            .selectAll("line")
+            .data(links)
+            .enter()
+            .append("line")
+            .attr("x1", (d) => nodes[d.source].x)
+            .attr("y1", (d) => nodes[d.source].y)
+            .attr("x2", (d) => nodes[d.target].x)
+            .attr("y2", (d) => nodes[d.target].y)
+            .attr("stroke", "Gray");
+
+        // Creating the nodes
+        const node = nodeGroup
+            .selectAll("circle")
+            .data(nodes)
+            .enter()
+            .append("circle")
+            .attr("cx", (d) => d.x)
+            .attr("cy", (d) => d.y)
+            .attr("r", 10)
+            .attr("fill", "purple");
+
+        // the node labels 1 to 13
+        nodeGroup
+            .selectAll("text")
+            .data(nodes)
+            .enter()
+            .append("text")
+            .attr("x", (d) => d.x)
+            .attr("y", (d) => d.y + 30)
+            .attr("text-anchor", "middle")
+            .text((d) => d.id)
+            .style("fill" , "Red");
+    </script>
+</body>
+
+</html>

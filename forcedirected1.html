@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Force-Directed Graph</title>
+  <script src="https://unpkg.com/d3@7.8.2/dist/d3.min.js"></script>
+</head>
+
+<body>
+
+  <h2> Force Directed Layout </h2>
+  <script>
+
+
+    //  data as an adjacency matrix
+
+    const adjacencyMatrix = [
+      [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+      [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+      [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+      [1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+    ];
+
+    const nodes = [];
+    const links = [];
+
+    // Create nodes
+    for (let i = 0; i < adjacencyMatrix.length; i++) {
+      nodes.push({
+        id: i,
+        name: ` ${i+1}`
+      });
+    }
+
+    // Create links
+    for (let i = 0; i < adjacencyMatrix.length; i++) {
+      for (let j = i; j < adjacencyMatrix.length; j++) {
+        if (adjacencyMatrix[i][j] !== 0) {
+          links.push({
+            source: i,
+            target: j
+          });
+        }
+      }
+    }
+
+    // width and height of the SVG element
+    const width = 600;
+    const height = 600;
+
+    //svg object
+    const svg = d3.select("body").append("svg")
+      .attr('width', width)
+      .attr('height', height);
+
+    // force simulation 
+    const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).distance(100))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(350, 350));
+
+    // Add links between nodes
+    const linksEle = svg.selectAll("line")
+      .data(links)
+      .enter()
+      .append("line")
+      .style("stroke", "purple")
+      
+      .style("stroke-width", "2px");
+
+    // Add nodes 
+    const nodesEle = svg.selectAll("circle")
+      .data(nodes)
+      .enter()
+      .append("circle")
+      .attr("r", 7)
+      .style("fill", "#69b3a2")
+      .call(drag(simulation));
+
+    // Add labels numbering the nodes
+    const label = svg.selectAll("text")
+      .data(nodes)
+      .enter()
+      .append("text")
+      .text(d => d.name)
+      .style("text-anchor", "middle")
+      .style("fill", "Red")
+      .style("font-family", "Arial")
+      .style("font-size", 10);
+
+    // Update node, link, and label positions according to stimulation
+    simulation.on("tick", () => {
+      linksEle
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+      nodesEle
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+
+      label
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 15);
+    });
+
+    // drag behavior function 
+    function drag(simulation) {
+      function dragStarted(event) {
+        if (!event.active) simulation.alphaTarget(0.2).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+      }
+
+      function dragged(event) {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+      }
+
+      function dragEnded(event) {
+        if (!event.active) simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
+      }
+
+      return d3.drag()
+        .on("start", dragStarted)
+        .on("drag", dragged)
+        .on("end", dragEnded);
+    }
+
+
+  </script>
+</body>
+
+</html>

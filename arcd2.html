@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Arc Diagram</title>
+    <script src="https://unpkg.com/d3@7.8.2/dist/d3.min.js"></script>
+</head>
+
+<body>
+    <h2> Arc diagram </h2>
+
+    <div id="arcdig"></div>
+
+    <script>
+        // 13 node matrix 
+        const data = [
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+            [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+        ];
+
+
+
+        // dimensions and margins of the graph
+        const margin = { top: 30, right: 50, bottom: 30, left: 30 };
+        const width = 700 - margin.right;
+        //- margin.left - margin.right,
+        const height = 500; 
+
+        //  svg object to the body of the page as mentioned in div tag
+        const svg = d3.select("#arcdig")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height  + margin.bottom) 
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // creating list of node names
+        const allNodes = Array.from({ length: data.length }, (_, i) => ` ${i + 1}`);
+
+        // position the 1 to 13 nodes on the X axis
+        const x = d3.scalePoint()
+            .range([0, width - 50])
+            .domain(allNodes);
+
+        // list of node objects with name and id properties
+        const nodes = allNodes.map((name, id) => ({ name, id }));
+
+        // list of link objects with source and target properties
+        const links = [];
+        for (let i = 0; i < data.length; i++) {
+            for (let j = i + 1; j < data[i].length; j++) {
+                if (data[i][j]) {
+                    links.push({ source: i, target: j });
+                }
+            }
+        }
+
+        // the circle for the nodes
+        svg
+            .selectAll("mynodes")
+            .data(nodes)
+            .enter()
+            .append("circle")
+            .attr("cx", d => x(d.name))
+            .attr("cy", height - 30)
+            .attr("r", 8)
+            .style("fill", "blue")
+
+            
+
+        // a label to every node
+        svg
+            .selectAll("mylabels")
+            .data(nodes)
+            .enter()
+            .append("text")
+            .attr("x", d => x(d.name))
+            .attr("y", height - 10)
+            .text(d => d.name)
+            .style("text-anchor", "middle")
+            .style("fill" , "Red");
+
+        // links between nodes
+        svg
+            .selectAll('mylinks')
+            .data(links)
+            .enter()
+            .append('path')
+            .attr('d', function (d) {
+                const start = x(nodes[d.source].name); // X position of start node 
+                const end = x(nodes[d.target].name); // X position of end node
+                const inflection = (start + end) / 2; // X position of the inflection
+                return ['M', start, height - 30, // near the starting node the arc starts at the coordinate x=start, y=height-30 
+                    'A', // an elliptical arc is built
+                    inflection - start, ',', // Next 2 lines are the coordinates Height is proportional with start - end distance
+                    inflection - start, 0, 0, ',',
+                    start < end ? 1 : 0, end, ',', height - 30] // We always want the arc on top. 
+                    .join(' ');
+            })
+            .style("fill", "none")
+            .attr("stroke", "purple");
+           
+
+            
+
+
+
+
+
+
+    </script>
+
+
+</body>
+
+</html>
